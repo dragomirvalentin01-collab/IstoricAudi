@@ -2,8 +2,6 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 
-const money = (n) => Number(n || 0).toFixed(2)
-
 /** Export istoric schimburi in PDF, gata de dus la service */
 export function exportPdf(changes, vehicle) {
   const doc = new jsPDF({ orientation: 'landscape' })
@@ -26,25 +24,16 @@ export function exportPdf(changes, vehicle) {
     [c.oil_brand, c.oil_spec].filter(Boolean).join(' ') || '-',
     c.oil_quantity ? `${c.oil_quantity} L` : '-',
     [c.filter_oil, c.filter_air, c.filter_cabin].filter(Boolean).join(', ') || '-',
-    money(c.part_cost),
-    money(c.labor_cost),
-    money(Number(c.part_cost || 0) + Number(c.labor_cost || 0)),
-    c.shop || '-'
+    c.notes || '-'
   ])
 
   autoTable(doc, {
     startY: 36,
-    head: [['Data', 'Kilometraj', 'Ulei', 'Cantitate', 'Filtre', 'Piese', 'Manopera', 'Total', 'Service']],
+    head: [['Data', 'Kilometraj', 'Ulei', 'Cantitate', 'Filtre', 'Observatii']],
     body: rows,
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: [2, 132, 199] }
   })
-
-  const total = changes.reduce(
-    (sum, c) => sum + Number(c.part_cost || 0) + Number(c.labor_cost || 0), 0
-  )
-  doc.setFontSize(12)
-  doc.text(`Total general: ${total.toFixed(2)} lei`, 14, doc.lastAutoTable.finalY + 10)
 
   const name = `istoric-schimburi-${new Date().toISOString().slice(0, 10)}.pdf`
   doc.save(name)
@@ -52,7 +41,7 @@ export function exportPdf(changes, vehicle) {
 }
 
 /** Export istoric in Excel */
-export function exportExcel(changes, vehicle) {
+export function exportExcel(changes) {
   const data = changes.map((c) => ({
     Data: new Date(c.date).toLocaleDateString('ro-RO'),
     'Kilometraj (km)': c.km,
@@ -62,10 +51,6 @@ export function exportExcel(changes, vehicle) {
     'Filtru ulei': c.filter_oil || '',
     'Filtru aer': c.filter_air || '',
     'Filtru habitaclu': c.filter_cabin || '',
-    'Cost piese': Number(c.part_cost || 0),
-    'Cost manopera': Number(c.labor_cost || 0),
-    Total: Number(c.part_cost || 0) + Number(c.labor_cost || 0),
-    Service: c.shop || '',
     Observatii: c.notes || ''
   }))
 

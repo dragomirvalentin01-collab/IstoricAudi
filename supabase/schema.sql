@@ -33,9 +33,6 @@ create table if not exists public.oil_changes (
   filter_oil    text,
   filter_air    text,
   filter_cabin  text,
-  part_cost     numeric default 0,
-  labor_cost    numeric default 0,
-  shop          text,          -- service unde s-a facut
   notes         text,
   receipt_url   text,
   created_at    timestamptz default now()
@@ -91,3 +88,13 @@ create policy own on public.notes for all to authenticated
 drop policy if exists own on public.push_subscriptions;
 create policy own on public.push_subscriptions for all to authenticated
   using ((auth.uid() = user_id)) with check ((auth.uid() = user_id));
+
+-- ============================================================
+-- Migratie (aplicata la proiectul nou-separat pe 2026-10-10):
+-- au fost eliminate coloanele de cost si atelier.
+-- Ruleaza doar daca primesti o eroare de "column does not exist".
+-- ============================================================
+-- alter table public.oil_changes
+--   drop column if exists part_cost,
+--   drop column if exists labor_cost,
+--   drop column if exists shop;

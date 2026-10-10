@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 
 export function Card({ children, className = '', ...props }) {
@@ -84,5 +85,31 @@ export function Stat({ label, value, hint, tone = '' }) {
       <p className={`text-2xl font-bold tracking-tight mt-1 ${tone}`}>{value}</p>
       {hint && <p className="text-xs text-garage-400 dark:text-garage-500 mt-0.5">{hint}</p>}
     </Card>
+  )
+}
+
+/**
+ * Camp cu lista de suggestii. Se poate scrie orice - lista doar ajuta.
+ * (foloseste <datalist>, nativ, merge bine si pe telefon)
+ */
+export function Picker({ label, value, onChange, options, placeholder, hint, type = 'text' }) {
+  const id = useId()
+  return (
+    <Field label={label} hint={hint}>
+      <input
+        className="input"
+        type={type}
+        list={options?.length ? id : undefined}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {options?.length ? (
+        <datalist id={id}>
+          {options.map((o) => <option key={o} value={o} />)}
+        </datalist>
+      ) : null}
+    </Field>
   )
 }

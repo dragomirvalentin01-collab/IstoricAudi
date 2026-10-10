@@ -4,8 +4,9 @@ import { Plus, Pencil, Trash2, Car, Fuel } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useGarage } from '../hooks/useGarage'
+import { CAR_MAKES } from '../lib/manufacturers'
 import { STATUS_STYLE } from '../lib/reminders'
-import { Card, PageHeader, Empty, Modal, Field, Spinner } from '../components/ui'
+import { Card, PageHeader, Empty, Modal, Field, Picker, Spinner } from '../components/ui'
 
 const EMPTY = {
   name: '', make: '', model: '', year: '', vin: '', plate: '',
@@ -164,8 +165,8 @@ export default function Vehicles() {
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Marca"><input className="input" value={form.make}
-              onChange={(e) => setForm({ ...form, make: e.target.value })} placeholder="Audi" /></Field>
+            <Picker label="Marca" value={form.make} options={CAR_MAKES}
+                    onChange={(v) => setForm({ ...form, make: v })} placeholder="Alege sau scrie" />
             <Field label="Model"><input className="input" value={form.model}
               onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="A4 B6" /></Field>
           </div>

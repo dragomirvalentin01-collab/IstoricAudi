@@ -47,10 +47,6 @@ export function useGarage() {
     lastChange: lastByVehicle[v.id] || null
   }))
 
-  const totalSpend = changes.reduce(
-    (sum, c) => sum + Number(c.part_cost || 0) + Number(c.labor_cost || 0), 0
-  )
-
   const dueSoon = vehiclesWithStatus.filter(
     (v) => v.status.level === 'due' || v.status.level === 'soon'
   )
@@ -58,7 +54,7 @@ export function useGarage() {
   return {
     vehicles, vehiclesWithStatus, changes, notes,
     loading, error, reload,
-    totalSpend, dueSoon,
+    dueSoon,
     lastByVehicle
   }
 }

@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Droplets, Wallet, Car, AlertTriangle, ArrowRight, Plus } from 'lucide-react'
+import { Droplets, Car, AlertTriangle, ArrowRight, Plus } from 'lucide-react'
 import { useGarage } from '../hooks/useGarage'
 import { STATUS_STYLE } from '../lib/reminders'
 import { Card, Stat, Empty, PageHeader, Spinner } from '../components/ui'
 
 export default function Dashboard() {
-  const { vehiclesWithStatus, changes, totalSpend, dueSoon, loading } = useGarage()
+  const { vehiclesWithStatus, changes, dueSoon, loading } = useGarage()
 
   if (loading) {
     return <div className="grid place-items-center py-20"><Spinner className="w-8 h-8 text-accent-600" /></div>
@@ -47,9 +47,10 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <Stat label="Total cheltuieli" value={`${totalSpend.toFixed(0)} lei`} hint="piese + manopera" />
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <Stat label="Masini" value={vehiclesWithStatus.length} />
         <Stat label="Schimburi" value={changes.length} hint="in total" />
+        <Stat label="Ultimul" value={changes[0] ? new Date(changes[0].date).getFullYear() : '—'} hint="an" />
       </div>
 
       <section className="mb-8">
@@ -111,7 +112,6 @@ export default function Dashboard() {
           <div className="space-y-2.5">
             {recent.map((c) => {
               const v = vehiclesWithStatus.find((x) => x.id === c.vehicle_id)
-              const total = Number(c.part_cost || 0) + Number(c.labor_cost || 0)
               return (
                 <Card key={c.id} className="p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-accent-600/10 text-accent-600 dark:text-accent-400 grid place-items-center shrink-0">
@@ -124,19 +124,12 @@ export default function Dashboard() {
                       {c.oil_brand && ` · ${c.oil_brand}`}
                     </p>
                   </div>
-                  <p className="font-semibold text-sm shrink-0">{total.toFixed(0)} lei</p>
                 </Card>
               )
             })}
           </div>
         )}
       </section>
-
-      {vehiclesWithStatus.length > 0 && changes.length > 0 && (
-        <p className="mt-6 text-xs text-garage-400 dark:text-garage-500 flex items-center gap-1.5">
-          <Wallet className="w-3.5 h-3.5" /> Totalul include doar piese si manopera, fara taxe si consumabile.
-        </p>
-      )}
     </>
   )
 }
