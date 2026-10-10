@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-garage-50 text-garage-900 dark:bg-garage-950 dark:text-garage-100;
+    @apply antialiased;
+  }
+  ::selection { @apply bg-accent-500/30; }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-garage-900 border border-garage-200 dark:border-garage-800
+           rounded-2xl shadow-sm dark:shadow-none;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+           font-medium transition-all active:scale-[.97] disabled:opacity-50
+           disabled:pointer-events-none whitespace-nowrap;
+  }
+  .btn-primary { @apply btn bg-accent-600 text-white hover:bg-accent-500; }
+  .btn-ghost   { @apply btn bg-garage-100 dark:bg-garage-800 text-garage-800 dark:text-garage-100
+                        hover:bg-garage-200 dark:hover:bg-garage-700; }
+  .btn-danger  { @apply btn bg-red-600 text-white hover:bg-red-500; }
+  .input {
+    @apply w-full rounded-xl border border-garage-200 dark:border-garage-800
+           bg-white dark:bg-garage-950 px-3.5 py-2.5 text-sm
+           placeholder:text-garage-400 dark:placeholder:text-garage-600
+           focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500
+           transition;
+  }
+  .label { @apply block text-xs font-medium text-garage-500 dark:text-garage-400 mb-1.5; }
+  .chip  { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
+}
