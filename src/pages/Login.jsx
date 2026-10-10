@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LogIn, AlertTriangle } from 'lucide-react'
+import { Mail, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { Spinner } from '../components/ui'
 
@@ -17,28 +17,45 @@ function GoogleIcon({ className = 'w-5 h-5' }) {
 }
 
 export default function Login() {
-  const { user, loading, signInWithGoogle } = useAuth()
-  const [error, setError] = useState(null)
-  const [busy, setBusy] = useState(false)
+  const { user, loading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
 
-  useEffect(() => {
-    const hash = new URLSearchParams(window.location.hash.slice(1))
-    const err = hash.get('error_description')
-    if (err) setError(decodeURIComponent(err))
-  }, [])
+  const [mode, setMode] = useState('login')   // 'login' | 'signup'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const [ok, setOk] = useState(null)
 
   if (loading) {
     return <div className="min-h-screen grid place-items-center"><Spinner className="w-8 h-8 text-accent-600" /></div>
   }
   if (user) return <Navigate to="/" replace />
 
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setBusy(true); setError(null); setOk(null)
+    try {
+      if (mode === 'login') {
+        await signInWithEmail(email, password)
+      } else {
+        await signUpWithEmail(email, password)
+      }
+    } catch (err) {
+      if (err.message === 'CONT_CREAT_VERIFICA_EMAIL') {
+        setOk('Cont creat! Verifica emailul si apasa linkul din mesaj, apoi intra.')
+      } else {
+        setError(err.message)
+      }
+    }
+    setBusy(false)
+  }
+
   async function handleGoogle() {
-    setBusy(true)
-    setError(null)
+    setBusy(true); setError(null)
     try {
       await signInWithGoogle()
     } catch (e) {
-      setError(e.message)
+      setError('Autentificarea cu Google nu este activata inca. Foloseste emailul de mai jos.')
       setBusy(false)
     }
   }
@@ -46,36 +63,74 @@ export default function Login() {
   return (
     <div className="min-h-screen grid place-items-center px-5 py-10">
       <motion.div
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-sm text-center"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+        className="w-full max-w-sm"
       >
-        <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-accent-600 text-white grid place-items-center text-xl font-bold">
-          IA
+        <div className="text-center mb-7">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent-600 text-white grid place-items-center text-xl font-bold">IA</div>
+          <h1 className="text-2xl font-bold tracking-tight">Istoric Auto</h1>
+          <p className="text-sm text-garage-500 dark:text-garage-400 mt-1">
+            {mode === 'login' ? 'Intra in cont' : 'Creeaza-ti cont'}
+          </p>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Istoric Auto</h1>
-        <p className="text-sm text-garage-500 dark:text-garage-400 mt-2">
-          Tine minte fiecare schimb de ulei si filtre. Datele raman in contul tau.
-        </p>
 
         {error && (
-          <div className="mt-6 flex gap-2.5 text-left text-sm p-3 rounded-xl
-                          bg-amber-50 dark:bg-amber-500/10
-                          border border-amber-200 dark:border-amber-500/30
-                          text-amber-800 dark:text-amber-300">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+          <div className="mb-4 flex gap-2.5 text-sm p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10
+                          border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /><span>{error}</span>
+          </div>
+        )}
+        {ok && (
+          <div className="mb-4 flex gap-2.5 text-sm p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10
+                          border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /><span>{ok}</span>
           </div>
         )}
 
-        <button onClick={handleGoogle} disabled={busy} className="btn-ghost w-full mt-6 py-3 bg-white dark:bg-garage-900">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block relative">
+            <span className="sr-only">Email</span>
+            <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-garage-400 pointer-events-none" />
+            <input
+              className="input pl-10" type="email" required autoComplete="email"
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@exemplu.com"
+            />
+          </label>
+
+          <label className="block relative">
+            <span className="sr-only">Parola</span>
+            <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-garage-400 pointer-events-none" />
+            <input
+              className="input pl-10" type="password" required minLength={6}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder="Parola (minim 6 caractere)"
+            />
+          </label>
+
+          <button type="submit" disabled={busy} className="btn-primary w-full py-3">
+            {busy ? <Spinner className="w-5 h-5" /> : mode === 'login' ? 'Intra' : 'Creeaza cont'}
+          </button>
+        </form>
+
+        <button
+          onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); setOk(null) }}
+          className="w-full mt-3 text-sm text-accent-600 dark:text-accent-400"
+        >
+          {mode === 'login' ? 'Nu ai cont? Creeaza unul' : 'Ai deja cont? Intra'}
+        </button>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-garage-200 dark:bg-garage-800" />
+          <span className="text-xs text-garage-400 dark:text-garage-500">sau</span>
+          <div className="flex-1 h-px bg-garage-200 dark:bg-garage-800" />
+        </div>
+
+        <button onClick={handleGoogle} disabled={busy} className="btn-ghost w-full py-3 bg-white dark:bg-garage-900">
           {busy ? <Spinner className="w-5 h-5" /> : <GoogleIcon />}
           <span className="text-sm font-medium">Continua cu Google</span>
         </button>
-
-        <p className="text-xs text-garage-400 dark:text-garage-500 mt-6">
-          Autentificarea cu Google trebuie activata in proiectul Supabase.
-        </p>
       </motion.div>
     </div>
   )
